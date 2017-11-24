@@ -31,29 +31,30 @@ class Path(object):
         plt.plot(x, y)
         plt.show()
 
-    def generate_simple(self,size):
-            for i in range(size):
-                self.path.append(Point(10,i*10))
-            for i in range(size):
-                self.path.append(Point(i*10+10, size*10))
-            for i in range(size):
-                self.path.append(Point(i*10+10, 10))
-            for i in range(size):
-                self.path.append(Point(size*10,i*10))
-            shuffle(self.path)
-            self.size = len(self.path)
-            self.energy.append(self.count_energy())
-            x = [p.x for p in self.path]
-            y = [p.y for p in self.path]
-            plt.plot(x, y)
-            plt.show()
+    def generate_simple(self, size):
+        for i in range(size):
+            self.path.append(Point(10, i * 10))
+        for i in range(size):
+            self.path.append(Point(i * 10 + 10, size * 10))
+        for i in range(size):
+            self.path.append(Point(i * 10 + 10, 10))
+        for i in range(size):
+            self.path.append(Point(size * 10, i * 10))
+        shuffle(self.path)
+        self.size = len(self.path)
+        self.energy.append(self.count_energy())
+        x = [p.x for p in self.path]
+        y = [p.y for p in self.path]
+        plt.plot(x, y)
+        plt.show()
 
-
-    def generate_clusters(self, clusers, node_per_cluster):
-        for i in range(clusers):
-            for j in range(node_per_cluster):
-                self.path.append(Point(randint(i * node_per_cluster, (i + 1) * node_per_cluster - 1),
-                                       randint(i * node_per_cluster, (i + 1) * node_per_cluster - 1)))
+    def generate_clusters(self, clusters, node_per_cluster):
+        for i in range(clusters ** 4):
+            for k in range(clusters ** 4):
+                if k % clusters**3 == 0 and i % clusters**3 == 0:
+                    for j in range(node_per_cluster):
+                        self.path.append(Point(randint(k * node_per_cluster, (k + 1) * node_per_cluster - 1),
+                                               randint(i * node_per_cluster, (i + 1) * node_per_cluster - 1)))
         shuffle(self.path)
         self.size = len(self.path)
         self.energy.append(self.count_energy())

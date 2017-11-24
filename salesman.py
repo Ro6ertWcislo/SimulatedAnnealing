@@ -28,9 +28,9 @@ def solve(path, temp_space):
 
 
 path2 = Path()
-path2.generate_simple(15)
+path2.generate_clusters(3,15)
 
-solve(path2, np.logspace(4, 0, 10000))
+solve(path2, np.logspace(5, 0, 100000))
 plt.figure(figsize=(8, 4))
 
 xx = [p.x for p in path2.path] + [path2.path[0].x]
