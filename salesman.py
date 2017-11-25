@@ -8,7 +8,7 @@ def choose_state(T, energy_prev, energy_act):
     try:
         p = np.math.exp((energy_prev - energy_act) / T)
     except:
-        p=1
+        p = 1
     if energy_act < energy_prev:
         return energy_act
     else:
@@ -30,20 +30,25 @@ def solve(path, temp_space):
     return path
 
 
-from bitmap import *
-x = BitMap()
-x.set_energy_and_neighbourhood(four_friends_energy,four_friends_neighbours)
-x.generate_with_density(128,0.2)
+# from bitmap import *
+# x = BitMap()
+# x.set_energy_and_neighbourhood(four_friends_energy,four_friends_neighbours)
+# x.generate_with_density(128,0.2)
+#
+# x.draw()
+# solve(x,np.logspace(5, -2, 10000000))
+# x.draw()
+# plt.plot(range(len(x.energy)), x.energy)
+# plt.show()
+# print("done")
 
+from sudoku import Sudoku
+
+x = Sudoku()
+x.generate_random_solution()
+
+solve(x, np.linspace(1,0.00001,50000))
 x.draw()
-solve(x,np.logspace(5, -2, 10000000))
-x.draw()
-plt.plot(range(len(x.energy)), x.energy)
-plt.show()
-print("done")
-
-
-
 
 """
 ladne wyniki:
