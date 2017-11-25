@@ -26,35 +26,38 @@ def count_matrix_energy(map):
     results = np.zeros(size, dtype=int)
     for i in np.nditer(map):
         results[int(i - 1)] += 1
-    return sum([x - 1 for x in results if x > 1])
+    return sum([x - 1 for x in results if x > 1])**3
+
 
 def count_matrix_enhergy(map):
     results = np.zeros(size, dtype=int)
     for i in np.nditer(map):
         results[int(i - 1)] += 1
-    energy =  sum([x - 1 for x in results if x > 1])
+    energy = sum([x - 1 for x in results if x > 1])
+
 
 class Sudoku(object):
     def __init__(self):
         self.map, self.can_change = read()
         self.energy = []
         self.recently_swaped = None
+        self.legal_columns = None
 
     def generate_random_solution(self):
-        nums = np.ones(9, dtype=int) * 9
-        for i in np.nditer(self.map):
-            if i != 0:
-                nums[int(i - 1)] = nums[int(i - 1)] - 1
-        numbers_to_insert = []
-        for i, num in enumerate(nums):
-            for j in range(num):
-                numbers_to_insert.append(i + 1)
-        shuffle(numbers_to_insert)
-        for i in range(size):
-            for j in range(size):
-                if self.map[i][j] == 0:
-                    self.map[i][j] = numbers_to_insert[0]
-                    numbers_to_insert.pop(0)
+
+        for col_num, column in enumerate(self.map.T):
+            nums = np.zeros(9, np.bool_)
+            for row_num, number in enumerate(column):
+                if number > 0:
+                    nums[int(number) - 1] = True
+                    self.can_change[row_num][col_num] = False
+            legal_vals = [x + 1 for x, occupied in enumerate(nums) if not occupied]
+            if len(legal_vals) > 0:
+                for row_num in range(size):
+                    if self.map[row_num][col_num] == 0:
+                        self.map[row_num][col_num] = legal_vals[0]
+                        legal_vals.pop(0)
+        self.assign_legal_columns()
         self.energy.append(self.count_energy())
 
     def count_energy(self):
@@ -70,14 +73,17 @@ class Sudoku(object):
         return energy
 
     def swap_random(self):
-        p1_x, p1_y = randint(0, size - 1), randint(0, size - 1)
-        p2_x, p2_y = randint(0, size - 1), randint(0, size - 1)
-        while not self.can_change[p1_x][p1_y]:
-            p1_x, p1_y = randint(0, size - 1), randint(0, size - 1)
-        while not self.can_change[p2_x][p2_y]:
-            p2_x, p2_y = randint(0, size - 1), randint(0, size - 1)
-        self.map[p1_x][p1_y], self.map[p2_x][p2_y] = self.map[p2_x][p2_y], self.map[p1_x][p1_y]
-        self.recently_swaped = ((p1_x, p1_y), (p2_x, p2_y))
+        rand_col = randint(0, size - 1)
+        while not self.legal_columns[rand_col]:
+            rand_col = randint(0, size - 1)
+        p1_x = randint(0, size - 1)
+        p2_x = randint(0, size - 1)
+        while not self.can_change[p1_x][rand_col]:
+            p1_x = randint(0, size - 1)
+        while not self.can_change[p2_x][rand_col]:
+            p2_x = randint(0, size - 1)
+        self.map[p1_x][rand_col], self.map[p2_x][rand_col] = self.map[p2_x][rand_col], self.map[p1_x][rand_col]
+        self.recently_swaped = ((p1_x, rand_col), (p2_x, rand_col))
         self.energy.append(self.count_energy())
 
     def reswap(self):
@@ -90,6 +96,11 @@ class Sudoku(object):
         if len(self.energy) > 1:
             plt.plot(range(len(self.energy)), self.energy)
             plt.show()
+
+    def assign_legal_columns(self):
+        self.legal_columns = np.ones(size, dtype=np.bool_)
+        for col_num, column in enumerate(self.can_change.T):
+            self.legal_columns[col_num] = any(column)
 
 
 x = Sudoku()

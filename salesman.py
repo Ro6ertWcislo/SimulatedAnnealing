@@ -47,8 +47,9 @@ from sudoku import Sudoku
 x = Sudoku()
 x.generate_random_solution()
 
-solve(x, np.linspace(1,0.00001,50000))
+solve(x, np.logspace(3,0,200000))
 x.draw()
+print(x.energy[-25:])
 
 """
 ladne wyniki:
