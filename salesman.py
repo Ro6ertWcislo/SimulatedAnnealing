@@ -5,7 +5,10 @@ import random
 
 
 def choose_state(T, energy_prev, energy_act):
-    p = np.math.exp((-1) * (energy_act - energy_prev) / T)
+    try:
+        p = np.math.exp((energy_prev - energy_act) / T)
+    except:
+        p=1
     if energy_act < energy_prev:
         return energy_act
     else:
@@ -27,22 +30,34 @@ def solve(path, temp_space):
     return path
 
 
-path2 = Path()
-path2.generate_clusters(3,15)
+from bitmap import *
+x = BitMap()
+x.set_energy_and_neighbourhood(four_friends_energy,four_friends_neighbours)
+x.generate_with_density(128,0.2)
 
-solve(path2, np.logspace(5, 0, 100000))
-plt.figure(figsize=(8, 4))
-
-xx = [p.x for p in path2.path] + [path2.path[0].x]
-
-y = [p.y for p in path2.path] + [path2.path[0].y]
-plt.plot(xx, y)
-
-#
-plt.show()
-
-plt.figure(figsize=(16, 8))
-plt.plot(range(len(path2.energy)), path2.energy)
-
+x.draw()
+solve(x,np.logspace(5, -2, 10000000))
+x.draw()
+plt.plot(range(len(x.energy)), x.energy)
 plt.show()
 print("done")
+
+
+
+
+"""
+ladne wyniki:
+dla eight
+x.generate_with_density(32,0.1)
+solve(x,np.logspace(1, -1, 40000))
+
+
+
+
+x.set_energy_and_neighbourhood(diagonal_energy,diagonal_neighbours)
+x.generate_with_density(32,0.3)
+
+x.draw()
+solve(x,np.logspace(3.5, -1, 40000))
+
+"""

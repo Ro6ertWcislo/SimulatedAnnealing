@@ -51,7 +51,7 @@ class Path(object):
     def generate_clusters(self, clusters, node_per_cluster):
         for i in range(clusters ** 4):
             for k in range(clusters ** 4):
-                if k % clusters**3 == 0 and i % clusters**3 == 0:
+                if k % clusters ** 3 == 0 and i % clusters ** 3 == 0:
                     for j in range(node_per_cluster):
                         self.path.append(Point(randint(k * node_per_cluster, (k + 1) * node_per_cluster - 1),
                                                randint(i * node_per_cluster, (i + 1) * node_per_cluster - 1)))
@@ -68,17 +68,19 @@ class Path(object):
         p2 = p1
         while p1 == p2:
             p2 = randint(0, self.size - 1)
+        energy = self.energy[-1] - self.energy_delta(p1, p2)
         self.path[p1], self.path[p2] = self.path[p2], self.path[p1]
         self.energy.append(
-            self.count_energy())  # dodać recount energy - nie ma sensu liczyć wszystkiego za każdym razem
+            energy + self.energy_delta(p1, p2))
         self.recently_swaped = (p1, p2)
 
     def swap_neighbour(self):
         p1 = randint(0, self.size - 1)
         p2 = (p1 + 1) % self.size
+        energy = self.energy[-1] - self.energy_delta(p1, p2)
         self.path[p1], self.path[p2] = self.path[p2], self.path[p1]
         self.energy.append(
-            self.count_energy())  # dodać recount energy - nie ma sensu liczyć wszystkiego za każdym razem
+            energy + self.energy_delta(p1, p2))
         self.recently_swaped = (p1, p2)
 
     def reswap(self):
@@ -91,3 +93,10 @@ class Path(object):
         for i in range(self.size):
             energy += self.path[i].dist(self.path[(i + 1) % self.size])
         return energy
+
+    def energy_delta(self, p1, p2):
+        e_p1 = self.path[(len(self.path) + p1 - 1) % len(self.path)].dist(self.path[p1]) + \
+               self.path[(len(self.path) + p1 + 1) % len(self.path)].dist(self.path[p1])
+        e_p2 = self.path[(len(self.path) + p2 - 1) % len(self.path)].dist(self.path[p2]) + \
+               self.path[(len(self.path) + p2 + 1) % len(self.path)].dist(self.path[p2])
+        return e_p1 + e_p2
