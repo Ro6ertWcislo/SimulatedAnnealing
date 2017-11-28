@@ -1,6 +1,28 @@
 import numpy as np
 import random
 from matplotlib import pyplot as plt
+from mandelbrot import gen_mandelbrot_arr
+
+mandelbrot = gen_mandelbrot_arr()
+
+
+def mandelbrot_energy(x, y, map, size):
+    if map[x,y]:
+
+        if mandelbrot[x, y] == 1.0:
+            return 0
+        else:
+            return np.math.sqrt((x-55)**2 + (y-55)**2)
+    else:
+        if mandelbrot[x, y] == 1.0:
+            return np.math.sqrt((x - 55) ** 2 + (y - 55) ** 2)
+        else:
+
+            return 0
+
+
+def mandelbrot_neighbours(x, y, map, size):
+    return []
 
 
 def eight_friends_neighbours(x, y, map, size):
@@ -13,11 +35,36 @@ def eight_friends_neighbours(x, y, map, size):
 
 def eight_friends_energy(x, y, map, size):
     """ the more neighbours your have, the least energy you have. The lesser energy, the better"""
-    x = 64 - (0 - map[(x + 1) % size][y] - map[(x + 1) % size][(y + 1) % size] - map[x][(y + 1) % size] -
-              map[(x - 1) % size][(y + 1) % size] -
-              map[(x - 1) % size][y] - map[(x - 1) % size][(y - 1) % size] - map[x][(y - 1) % size] -
-              map[(x + 1) % size][(y - 1) % size]) ** 2
-    return x
+    return 8 - (0 - map[(x + 1) % size][y] - map[(x + 1) % size][(y + 1) % size] - map[x][(y + 1) % size] -
+                map[(x - 1) % size][(y + 1) % size] -
+                map[(x - 1) % size][y] - map[(x - 1) % size][(y - 1) % size] - map[x][(y - 1) % size] -
+                map[(x + 1) % size][(y - 1) % size])
+
+
+def double_energy(x, y, map, size):
+    return 16 - (sum([map[(x + i) % size][y + j] for i in [-2, -1, 0, 1, 2] for j in [2, -2]]) +
+                 sum([map[(x + i) % size][y + j] for i in [-2, 2] for j in [1, 0, -1]])
+                 - eight_friends_energy(x, y, map, size))
+
+
+def double_neighbours(x, y, map, size):
+    tmp = (eight_friends_neighbours(x, y, map, size) +
+           [((x + i) % size, y + j) for i in [-2, -1, 0, 1, 2] for j in [2, -2]] +
+           [((x + i) % size, y + j) for i in [-2, 2] for j in [-1, 0, 1]])
+    return [(x, y) for x, y in tmp if map[x][y]]
+
+
+def nine_friends_energy(x, y, map, size):
+    """ the more neighbours your have, the least energy you have. The lesser energy, the better"""
+    x = (map[(x + 1) % size][(y + 1) % size] + map[(x + 1) % size][(y - 1) % size] + map[(x + 2) % size][y])
+
+    return 9 - x ** 2
+
+
+def nine_friends_neighbours(x, y, map, size):
+    tmp = [((x + 1) % size, (y + 1) % size),
+           ((x + 1) % size, (y - 1) % size), ((x + 2) % size, y)]
+    return [(x, y) for x, y in tmp if map[x][y]]
 
 
 def four_friends_neighbours(x, y, map, size):
@@ -30,7 +77,7 @@ def four_friends_energy(x, y, map, size):
     """ the more neighbours your have, the least energy you have. The lesser energy, the better"""
     x = 16 - (0 - map[(x + 1) % size][y] - map[x][(y + 1) % size] -
               map[(x - 1) % size][y] - map[x][(y - 1) % size]) ** 2
-    return np.math.sqrt((x - size / 2)**2 +(y-size/2)**2)/2 + x
+    return np.math.sqrt((x - size / 2) ** 2 + (y - size / 2) ** 2) / 2 + x
 
 
 def diagonal_energy(x, y, map, size):
@@ -115,15 +162,16 @@ class BitMap(object):
         plt.scatter(x_ax, y_ax, marker='o', s=self.dot_size)
         plt.show()
 
-        if len(self.energy)>1:
+        if len(self.energy) > 1:
             plt.plot(range(len(self.energy)), self.energy)
             plt.show()
 
     def energy_delta(self, recently_swaped):
         (p1_x, p1_y), (p2_x, p2_y) = recently_swaped
-        return self.energy_fun(p1_x, p1_y, self.map, self.size) + self.energy_fun(p2_x, p2_y, self.map,
-                                                                                  self.size) + \
-               sum([self.energy_fun(x, y, self.map, self.size) for x, y in
-                    self.neighbour_fun(p1_x, p1_y, self.map, self.size)]) + \
-               sum([self.energy_fun(x, y, self.map, self.size) for x, y in
-                    self.neighbour_fun(p2_x, p2_y, self.map, self.size)])
+        x = self.energy_fun(p1_x, p1_y, self.map, self.size) + self.energy_fun(p2_x, p2_y, self.map,
+                                                                               self.size)
+        y = sum([self.energy_fun(x, y, self.map, self.size) for x, y in
+                 self.neighbour_fun(p1_x, p1_y, self.map, self.size)])
+        z = sum([self.energy_fun(x, y, self.map, self.size) for x, y in
+                 self.neighbour_fun(p2_x, p2_y, self.map, self.size)])
+        return x + y + z

@@ -26,20 +26,16 @@ def count_matrix_energy(map):
     results = np.zeros(size, dtype=int)
     for i in np.nditer(map):
         results[int(i - 1)] += 1
-    return sum([x - 1 for x in results if x > 1])**3
+    return sum([x-1 for x in results if x > 1])**2
 
 
-def count_matrix_enhergy(map):
-    results = np.zeros(size, dtype=int)
-    for i in np.nditer(map):
-        results[int(i - 1)] += 1
-    energy = sum([x - 1 for x in results if x > 1])
 
 
 class Sudoku(object):
     def __init__(self):
         self.map, self.can_change = read()
         self.energy = []
+        self.all_energy = []
         self.recently_swaped = None
         self.legal_columns = None
 
@@ -58,7 +54,9 @@ class Sudoku(object):
                         self.map[row_num][col_num] = legal_vals[0]
                         legal_vals.pop(0)
         self.assign_legal_columns()
-        self.energy.append(self.count_energy())
+        act_en = self.count_energy()
+        self.energy.append(act_en)
+        self.all_energy.append(act_en)
 
     def count_energy(self):
         small_size = int(np.sqrt(size))
@@ -84,7 +82,9 @@ class Sudoku(object):
             p2_x = randint(0, size - 1)
         self.map[p1_x][rand_col], self.map[p2_x][rand_col] = self.map[p2_x][rand_col], self.map[p1_x][rand_col]
         self.recently_swaped = ((p1_x, rand_col), (p2_x, rand_col))
-        self.energy.append(self.count_energy())
+        act_en = self.count_energy()
+        self.energy.append(act_en)
+        self.all_energy.append(act_en)
 
     def reswap(self):
         (p1_x, p1_y), (p2_x, p2_y) = self.recently_swaped
@@ -93,9 +93,8 @@ class Sudoku(object):
 
     def draw(self):
         print(self.map)
-        if len(self.energy) > 1:
-            plt.plot(range(len(self.energy)), self.energy)
-            plt.show()
+        plt.plot(range(len(self.all_energy)), self.all_energy)
+        plt.show()
 
     def assign_legal_columns(self):
         self.legal_columns = np.ones(size, dtype=np.bool_)

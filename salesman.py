@@ -29,41 +29,25 @@ def solve(path, temp_space):
     print(len(path.energy))
     return path
 
-
+#
 # from bitmap import *
 # x = BitMap()
-# x.set_energy_and_neighbourhood(four_friends_energy,four_friends_neighbours)
-# x.generate_with_density(128,0.2)
-#
+# x.set_energy_and_neighbourhood(mandelbrot_energy, mandelbrot_neighbours)
+# x.generate_with_density(110,0.3)
+# x.dot_size=30
 # x.draw()
-# solve(x,np.logspace(5, -2, 10000000))
+# solve(x,np.logspace(3, -2, 1000000))
 # x.draw()
 # plt.plot(range(len(x.energy)), x.energy)
 # plt.show()
-# print("done")
+# print(x.energy)
 
 from sudoku import Sudoku
 
-x = Sudoku()
-x.generate_random_solution()
-
-solve(x, np.logspace(3,0,200000))
-x.draw()
-print(x.energy[-25:])
-
-"""
-ladne wyniki:
-dla eight
-x.generate_with_density(32,0.1)
-solve(x,np.logspace(1, -1, 40000))
 
 
+su =Sudoku()
+su.generate_random_solution()
+solve(su, np.logspace(2,-3,100000))
 
 
-x.set_energy_and_neighbourhood(diagonal_energy,diagonal_neighbours)
-x.generate_with_density(32,0.3)
-
-x.draw()
-solve(x,np.logspace(3.5, -1, 40000))
-
-"""
