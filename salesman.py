@@ -1,53 +1,123 @@
-import numpy as np
-from model import Path
+"""
+This module can be used to generate points on a map.
+Then the random path going through all of the points can be generated.
+That means it produces input for simulated annealing algorithm
+"""
+
+import math
+from random import randint, shuffle
 from matplotlib import pyplot as plt
-import random
 
 
-def choose_state(T, energy_prev, energy_act):
-    try:
-        p = np.math.exp((energy_prev - energy_act) / T)
-    except:
-        p = 1
-    if energy_act < energy_prev:
-        return energy_act
-    else:
-        if random.random() < p:
-            return energy_act
-        else:
-            return energy_prev
+class Point(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def dist(self, point):
+        return math.sqrt((self.x - point.x) ** 2 + (self.y - point.y) ** 2)
+
+    def __str__(self):
+        return "x: {}, y: {} ".format(self.x, self.y)
 
 
-def solve(path, temp_space):
-    for T in temp_space:
-        path.swap_random()
-        energy_prev, energy_act = path.energy[-2:]
-        energy_chosen = choose_state(T, energy_prev, energy_act)
-        if energy_chosen == energy_prev:
-            path.reswap()
+class Path(object):
+    def __init__(self):
+        self.path = []
+        self.energy = []
+        self.recently_swaped = None
 
-    print(len(path.energy))
-    return path
+    def clear(self):
+        self.path, self.energy, self.recently_swaped = [], [], None
 
-#
-# from bitmap import *
-# x = BitMap()
-# x.set_energy_and_neighbourhood(mandelbrot_energy, mandelbrot_neighbours)
-# x.generate_with_density(110,0.3)
-# x.dot_size=30
-# x.draw()
-# solve(x,np.logspace(3, -2, 1000000))
-# x.draw()
-# plt.plot(range(len(x.energy)), x.energy)
-# plt.show()
-# print(x.energy)
+    def generate_uniform(self, size, bound):
+        self.clear()
+        self.path = [Point(randint(0, bound), randint(0, bound)) for i in range(size)]
+        self.size = len(self.path)
+        self.energy.append(self.count_energy())
 
-from sudoku import Sudoku
+        x = [p.x for p in self.path]
+        y = [p.y for p in self.path]
+        plt.plot(x, y)
+        plt.show()
 
+    def generate_simple(self, size):
+        self.clear()
+        for i in range(size):
+            self.path.append(Point(10, i * 10))
+        for i in range(size):
+            self.path.append(Point(i * 10 + 10, size * 10))
+        for i in range(size):
+            self.path.append(Point(i * 10 + 10, 10))
+        for i in range(size):
+            self.path.append(Point(size * 10, i * 10))
+        shuffle(self.path)
+        self.size = len(self.path)
+        self.energy.append(self.count_energy())
+        x = [p.x for p in self.path]
+        y = [p.y for p in self.path]
+        plt.plot(x, y)
+        plt.show()
 
+    def generate_clusters(self, clusters, node_per_cluster):
+        self.clear()
+        for i in range(clusters ** 4):
+            for k in range(clusters ** 4):
+                if k % clusters ** 3 == 0 and i % clusters ** 3 == 0:
+                    for j in range(node_per_cluster):
+                        self.path.append(Point(randint(k * node_per_cluster, (k + 1) * node_per_cluster - 1),
+                                               randint(i * node_per_cluster, (i + 1) * node_per_cluster - 1)))
+        shuffle(self.path)
+        self.size = len(self.path)
+        self.energy.append(self.count_energy())
+        x = [p.x for p in self.path]
+        y = [p.y for p in self.path]
+        plt.plot(x, y)
+        plt.show()
 
-su =Sudoku()
-su.generate_random_solution()
-solve(su, np.logspace(2,-3,100000))
+    def draw(self):
+        x = [p.x for p in self.path]
+        y = [p.y for p in self.path]
+        plt.plot(x, y)
+        plt.show()
 
+        plt.plot(range(len(self.energy)), self.energy)
+        plt.show()
 
+    def swap_random(self):
+        p1 = randint(0, self.size - 1)
+        p2 = p1
+        while p1 == p2:
+            p2 = randint(0, self.size - 1)
+        energy = self.energy[-1] - self.energy_delta(p1, p2)
+        self.path[p1], self.path[p2] = self.path[p2], self.path[p1]
+        self.energy.append(
+            energy + self.energy_delta(p1, p2))
+        self.recently_swaped = (p1, p2)
+
+    def swap_neighbour(self):
+        p1 = randint(0, self.size - 1)
+        p2 = (p1 + 1) % self.size
+        energy = self.energy[-1] - self.energy_delta(p1, p2)
+        self.path[p1], self.path[p2] = self.path[p2], self.path[p1]
+        self.energy.append(
+            energy + self.energy_delta(p1, p2))
+        self.recently_swaped = (p1, p2)
+
+    def reswap(self):
+        p1, p2 = self.recently_swaped
+        self.path[p1], self.path[p2] = self.path[p2], self.path[p1]
+        self.energy.pop()
+
+    def count_energy(self):
+        energy = 0
+        for i in range(self.size):
+            energy += self.path[i].dist(self.path[(i + 1) % self.size])
+        return energy
+
+    def energy_delta(self, p1, p2):
+        e_p1 = self.path[(len(self.path) + p1 - 1) % len(self.path)].dist(self.path[p1]) + \
+               self.path[(len(self.path) + p1 + 1) % len(self.path)].dist(self.path[p1])
+        e_p2 = self.path[(len(self.path) + p2 - 1) % len(self.path)].dist(self.path[p2]) + \
+               self.path[(len(self.path) + p2 + 1) % len(self.path)].dist(self.path[p2])
+        return e_p1 + e_p2

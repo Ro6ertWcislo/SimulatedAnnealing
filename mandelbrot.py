@@ -23,18 +23,3 @@ def gen_mandelbrot_arr():
         for j in range(110):
             mbrot[i + 35, j] = ar[i, j]
     return mbrot
-
-m = gen_mandelbrot_arr()
-# ones, zeros = 0,0
-# for i in np.nditer(m):
-#     if i==1:
-#         ones+=1
-#     else:
-#         zeros+=1
-# print(ones,zeros)
-
-for i in range(110):
-    acc = ""
-    for j in range(110):
-        acc+= "#" if m[i,j] ==1 else ' '
-    print(acc)
